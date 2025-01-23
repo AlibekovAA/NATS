@@ -1,0 +1,25 @@
+version: "3.8"
+
+services:
+  nats:
+    image: nats:2.9
+    container_name: nats
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+
+  python_app:
+    build:
+      context: ./python_app
+    container_name: python_app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - nats
+
+  go_app:
+    build:
+      context: ./go_app
+    container_name: go_app
+    depends_on:
+      - nats
