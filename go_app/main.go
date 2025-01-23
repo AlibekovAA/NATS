@@ -25,7 +25,7 @@ func main() {
 
 	log.Println("Connected to NATS")
 
-	_, err = nc.Subscribe("greet", func(m *nats.Msg) {
+	_, err = nc.Subscribe("Data", func(m *nats.Msg) {
 		log.Printf("Received message: %s", string(m.Data))
 	})
 	if err != nil {

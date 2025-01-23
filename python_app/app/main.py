@@ -30,4 +30,7 @@ async def shutdown():
 @app.get("/")
 async def read_root():
     logger.info("Root endpoint accessed")
-    return {"message": "Hello from Python App"}
+    message_data = {"event": "User accessed root endpoint"}
+    message_bytes = str(message_data).encode("utf-8")
+    await nats_client.publish("Data", message_bytes)
+    return {"message": "Hello from App"}
