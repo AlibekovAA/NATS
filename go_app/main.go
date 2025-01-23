@@ -3,14 +3,23 @@ package main
 import (
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/nats-io/nats.go"
+
 )
 
 func main() {
-	logFile, err := os.OpenFile("logs/app.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	logDir := "logs"
+	err := os.MkdirAll(logDir, os.ModePerm)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Error creating log directory:", err)
+	}
+
+	logFilepath := filepath.Join(logDir, "app.log")
+	logFile, err := os.OpenFile(logFilepath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		log.Fatal("Error opening log file:", err)
 	}
 	defer logFile.Close()
 

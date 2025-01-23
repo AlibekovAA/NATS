@@ -1,15 +1,22 @@
 import logging
+import os
+
 from fastapi import FastAPI
 from nats.aio.client import Client as NATS
 
 app = FastAPI()
 nats_client = NATS()
 
+log_file_path = "python_app/logs/app.log"
+log_dir = os.path.dirname(log_file_path)
+if not os.path.exists(log_dir):
+    os.makedirs(log_dir)
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
     handlers=[
-        logging.FileHandler("python_app/logs/app.log"),
+        logging.FileHandler(log_file_path),
     ]
 )
 logger = logging.getLogger(__name__)
