@@ -2,18 +2,16 @@ package main
 
 import (
 	"log"
+
 )
 
 func main() {
 	logConfig := NewLogConfig()
-	if err := CreateLogDir(logConfig); err != nil {
-		log.Fatal(err)
-	}
-	logFile, err := CreateLogFile(logConfig)
+	logger, err := SetLogger(logConfig)
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.SetOutput(logFile)
+	log.SetOutput(logger.Writer())
 
 	natsConfig := NewNATSConfig()
 	nc, err := ConnectToNATS(natsConfig)
@@ -28,5 +26,5 @@ func main() {
 	}
 	defer sub.Unsubscribe()
 
-	log.Println("Go server starting...")
+	logger.Println("Go server starting...")
 }
