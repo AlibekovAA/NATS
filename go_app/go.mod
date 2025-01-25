@@ -1,6 +1,6 @@
 module go_app
 
-go 1.23.3
+go 1.21
 
 require github.com/nats-io/nats.go v1.36.0
 

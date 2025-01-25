@@ -13,8 +13,8 @@ func main() {
 	}
 	log.SetOutput(logger.Writer())
 
-	natsConfig := NewNATSConfig()
-	nc, err := ConnectToNATS(natsConfig)
+	config := NewConfig()
+	nc, err := ConnectToNATS(&NATSConfig{Addr: config.NATSAddr})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -27,4 +27,5 @@ func main() {
 	defer sub.Unsubscribe()
 
 	logger.Println("Go server starting...")
+	select {}
 }

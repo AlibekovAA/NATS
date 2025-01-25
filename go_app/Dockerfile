@@ -1,4 +1,4 @@
-FROM golang:1.23 AS builder
+FROM golang:1.21 AS builder
 
 WORKDIR /app
 
@@ -6,12 +6,14 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
-RUN go build -o main .
+RUN CGO_ENABLED=0 GOOS=linux go build -o main .
 
-FROM debian:bullseye-slim
+FROM alpine:latest
 
 WORKDIR /app
 
-COPY --from=builder /app/main /app/
+COPY --from=builder /app/main .
 
-CMD ["./main"]
+EXPOSE 8080
+
+ENTRYPOINT ["/app/main"]

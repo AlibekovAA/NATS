@@ -4,7 +4,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-
 )
 
 type LogConfig struct {
