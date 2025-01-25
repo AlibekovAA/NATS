@@ -1,30 +1,18 @@
-import logging
-import os
-
 from fastapi import FastAPI
-from nats.aio.client import Client as NATS
+from backend.logger import setup_logger
+from backend.nats_client import NATSClient
 
 app = FastAPI()
-nats_client = NATS()
 
 log_file_path = "python_app/logs/app.log"
-log_dir = os.path.dirname(log_file_path)
-if not os.path.exists(log_dir):
-    os.makedirs(log_dir)
+logger = setup_logger(log_file_path)
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[
-        logging.FileHandler(log_file_path),
-    ]
-)
-logger = logging.getLogger(__name__)
+nats_client = NATSClient(server_url="nats://nats:4222")
 
 
 @app.on_event("startup")
 async def startup():
-    await nats_client.connect("nats://nats:4222")
+    await nats_client.connect()
     logger.info("Python server started and connected to NATS")
 
 
