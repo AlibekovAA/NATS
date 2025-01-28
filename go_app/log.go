@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 type LogConfig struct {
@@ -28,6 +29,12 @@ func SetLogger(logConfig *LogConfig) (*log.Logger, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	moscow, err := time.LoadLocation("Europe/Moscow")
+	if err != nil {
+		moscow = time.FixedZone("MSK", 3*60*60)
+	}
+	time.Local = moscow
 
 	return log.New(logFile, "", log.Ldate|log.Ltime|log.Lshortfile), nil
 }
