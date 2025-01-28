@@ -25,7 +25,7 @@ services:
     volumes:
       - ./python_app:/app
     environment:
-      - NATS_URL=nats://nats:4222
+      - NATS_SERVER_URL=nats://nats:4222
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
@@ -39,5 +39,7 @@ services:
     container_name: go_app
     depends_on:
       - nats
+    volumes:
+      - ./go_app/logs:/app/logs
     environment:
-      - NATS_URL=nats://nats:4222
+      - NATS_ADDR=nats://nats:4222
