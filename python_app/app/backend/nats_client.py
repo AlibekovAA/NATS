@@ -1,13 +1,16 @@
-from nats.aio.client import Client as NATS
+from typing import Callable, Awaitable, Dict
+from nats.aio.client import Client as NATS, Msg
+from nats.aio.subscription import Subscription
 
 
 class NATSClient:
-    def __init__(self, server_url: str):
-        self.server_url = server_url
-        self.client = NATS()
-        self._connected = False
+    def __init__(self, server_url: str) -> None:
+        self.server_url: str = server_url
+        self.client: NATS = NATS()
+        self._connected: bool = False
+        self._subscribers: Dict[str, Subscription] = {}
 
-    async def connect(self):
+    async def connect(self) -> None:
         try:
             await self.client.connect(
                 self.server_url,
@@ -21,7 +24,19 @@ class NATSClient:
             self._connected = False
             raise
 
-    async def close(self):
+    async def subscribe(self, subject: str, callback: Callable[[Msg], Awaitable[None]]) -> Subscription:
+        if subject not in self._subscribers:
+            sub = await self.client.subscribe(subject, cb=callback)
+            self._subscribers[subject] = sub
+            return sub
+        return self._subscribers[subject]
+
+    async def request(self, subject: str, payload: bytes, timeout: float = 10.0) -> Msg:
+        if not self.is_connected():
+            raise self.NATSConnectionError("NATS client is not connected")
+        return await self.client.request(subject, payload, timeout=timeout)
+
+    async def close(self) -> None:
         await self.client.close()
         self._connected = False
 
@@ -31,7 +46,7 @@ class NATSClient:
     class NATSConnectionError(Exception):
         pass
 
-    async def publish(self, subject: str, message: bytes):
+    async def publish(self, subject: str, message: bytes) -> None:
         try:
             if not self.is_connected():
                 raise self.NATSConnectionError("NATS client is not connected")

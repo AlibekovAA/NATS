@@ -29,9 +29,9 @@ func main() {
 	}
 	defer nc.Close()
 
-	sub, err := SubscribeToTopic(nc, "Data")
+	sub, err := SubscribeToAnalysis(nc)
 	if err != nil {
-		logger.Printf("Failed to subscribe to topic: %v", err)
+		logger.Printf("Failed to subscribe to analysis tasks: %v", err)
 		return
 	}
 	defer sub.Unsubscribe()

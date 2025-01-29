@@ -12,7 +12,7 @@ def setup_logger(log_file_path: str) -> logging.Logger:
     moscow_tz = pytz.timezone('Europe/Moscow')
 
     class MoscowFormatter(logging.Formatter):
-        def formatTime(self, record, datefmt=None):
+        def formatTime(self, record: logging.LogRecord, datefmt: str | None = None) -> str:
             dt = datetime.fromtimestamp(record.created)
             dt = pytz.utc.localize(dt).astimezone(moscow_tz)
             return dt.strftime('%Y-%m-%d %H:%M:%S')

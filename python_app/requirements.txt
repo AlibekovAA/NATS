@@ -2,6 +2,7 @@ fastapi[all]
 nats-py
 uvicorn
 pydantic
-python-dotenv
-aiofiles
 pytz
+mypy
+types-aiofiles
+types-pytz

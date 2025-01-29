@@ -3,38 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Message Sender</title>
-    <style>
-        body { font-family: Arial, sans-serif; }
-        .container { max-width: 600px; margin: 50px auto; }
-        input[type="text"] { width: 100%; padding: 10px; margin: 10px 0; }
-        button { padding: 10px 20px; }
-        .response { margin-top: 20px; }
-    </style>
+    <title>Network Packet Analyzer</title>
+    <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
     <div class="container">
-        <h1>Send a Message</h1>
-        <input type="text" id="message" placeholder="Enter your message here">
-        <button onclick="sendMessage()">Send</button>
-        <div class="response" id="response"></div>
+        <header class="header">
+            <h1>Network Packet Analyzer</h1>
+        </header>
+
+        <main class="main">
+            <div class="upload-form">
+                <input type="file" id="pcapFile" accept=".pcap" class="file-input">
+                <button onclick="analyzePcap()" class="analyze-btn">Analyze</button>
+            </div>
+
+            <div class="results" id="results"></div>
+        </main>
     </div>
-    <script>
-        async function sendMessage() {
-            const message = document.getElementById('message').value;
-            const responseDiv = document.getElementById('response');
-            try {
-                const response = await fetch('/send-message', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message })
-                });
-                const result = await response.json();
-                responseDiv.textContent = result.message;
-            } catch (error) {
-                responseDiv.textContent = 'Error sending message';
-            }
-        }
-    </script>
+    <script src="/static/js/analyzer.js"></script>
 </body>
 </html>

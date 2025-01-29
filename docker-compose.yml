@@ -4,6 +4,7 @@ services:
   nats:
     image: nats:2.9
     container_name: nats
+    command: ["--max_bytes", "67108864"]
     ports:
       - "4222:4222"
       - "8222:8222"

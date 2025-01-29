@@ -1,60 +1,96 @@
 from contextlib import asynccontextmanager
+from typing import Annotated, AsyncGenerator
+from io import BytesIO
+import logging
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, Depends
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.backend.log import setup_logger
 from app.backend.nats_client import NATSClient
-from app.backend.models import Message
+from app.backend.models import NetworkAnalysisResult
 from app.backend.config import NATS_SERVER_URL, LOG_FILE_PATH
+from app.backend.network_analyzer import NetworkAnalyzer
+
+
+class AppState:
+    def __init__(self) -> None:
+        self.logger: logging.Logger = setup_logger(LOG_FILE_PATH)
+        self.nats_client: NATSClient = NATSClient(server_url=NATS_SERVER_URL)
+        self.network_analyzer: NetworkAnalyzer = NetworkAnalyzer(self.nats_client)
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
-    await nats_client.connect()
-    logger.info("Python server started and connected to NATS")
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    state = AppState()
+    app.state.logger = state.logger
+    app.state.nats_client = state.nats_client
+    app.state.network_analyzer = state.network_analyzer
+
+    await app.state.nats_client.connect()
+    app.state.logger.info("Python server started and connected to NATS")
+
     yield
-    await nats_client.close()
-    logger.info("Python server shutting down")
+
+    await app.state.nats_client.close()
+    app.state.logger.info("Python server shutting down")
+
 
 app = FastAPI(lifespan=lifespan)
 app.mount("/static", StaticFiles(directory="app/frontend/public"), name="static")
 
-logger = setup_logger(LOG_FILE_PATH)
-nats_client = NATSClient(server_url=NATS_SERVER_URL)
+
+def get_app_state() -> AppState:
+    return app.state
+
+
+async def get_analyzer() -> NetworkAnalyzer:
+    return get_app_state().network_analyzer
+
+
+async def get_logger() -> logging.Logger:
+    return get_app_state().logger
 
 
 @app.get("/", response_class=HTMLResponse)
-async def get_html():
+async def get_html() -> HTMLResponse:
     with open("app/frontend/public/index.html") as f:
         return HTMLResponse(content=f.read())
 
 
-@app.get("/")
-async def read_root():
-    logger.info("Root endpoint accessed")
-    message_data = {"event": "User accessed root endpoint"}
-    message_bytes = str(message_data).encode("utf-8")
-    await nats_client.publish("Data", message_bytes)
-    return {"message": "Hello from App"}
-
-
-@app.post("/send-message")
-async def send_message(msg: Message):
-    try:
-        message_bytes = msg.message.encode("utf-8")
-        await nats_client.publish("Data", message_bytes)
-        logger.info(f"Message sent to NATS: {msg.message}")
-        return {"message": "Message sent successfully"}
-    except Exception as e:
-        logger.error(f"Failed to send message: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to send message")
-
-
 @app.get("/health")
-async def health_check():
+async def health_check() -> dict[str, bool | str]:
     return {
         "status": "healthy",
-        "nats_connected": nats_client.is_connected()
+        "nats_connected": app.state.nats_client.is_connected()
     }
+
+
+@app.post("/analyze-network", response_model=NetworkAnalysisResult)
+async def analyze_network_packets(
+    file: UploadFile,
+    analyzer: Annotated[NetworkAnalyzer, Depends(get_analyzer)],
+    logger: Annotated[logging.Logger, Depends(get_logger)]
+) -> NetworkAnalysisResult:
+    if not file.filename or not file.filename.endswith('.pcap'):
+        raise HTTPException(status_code=400, detail="Only PCAP files are supported")
+
+    MAX_FILE_SIZE: int = 60 * 1024 * 1024
+
+    contents_file = await file.read()
+    file_size: int = len(contents_file)
+
+    if file_size > MAX_FILE_SIZE:
+        raise HTTPException(
+            status_code=400,
+            detail=f"File size exceeds maximum allowed size of {MAX_FILE_SIZE/1024/1024}MB"
+        )
+
+    try:
+        result = await analyzer.analyze_pcap(BytesIO(contents_file))
+        logger.info(f"Successfully analyzed network packets from {file.filename}")
+        return result
+    except Exception as e:
+        logger.error(f"Failed to analyze network packets: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))

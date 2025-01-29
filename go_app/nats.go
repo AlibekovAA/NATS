@@ -1,11 +1,12 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/nats-io/nats.go"
-
 )
 
 type NATSConfig struct {
@@ -19,30 +20,53 @@ func NewNATSConfig() *NATSConfig {
 }
 
 func ConnectToNATS(natsConfig *NATSConfig) (*nats.Conn, error) {
-    log.Printf("Connecting to NATS at %s", natsConfig.Addr)
-    nc, err := nats.Connect(natsConfig.Addr)
-    if err != nil {
-        return nil, fmt.Errorf("failed to connect to NATS: %w", err)
-    }
-    log.Printf("Successfully connected to NATS")
-    return nc, nil
-}
+	log.Printf("Connecting to NATS at %s", natsConfig.Addr)
 
-func SubscribeToTopic(nc *nats.Conn, topic string) (*nats.Subscription, error) {
-    log.Printf("Subscribing to topic: %s", topic)
-    sub, err := nc.Subscribe(topic, func(m *nats.Msg) {
-        log.Printf("Received message on topic %s: %s", topic, string(m.Data))
-    })
-    if err != nil {
-        return nil, fmt.Errorf("failed to subscribe to topic %s: %w", topic, err)
-    }
-    log.Printf("Successfully subscribed to topic: %s", topic)
-    return sub, nil
-}
-
-func PublishToTopic(nc *nats.Conn, topic string, data []byte) error {
-	if err := nc.Publish(topic, data); err != nil {
-		return err
+	opts := []nats.Option{
+		nats.MaxReconnects(5),
+		nats.ReconnectWait(2 * time.Second),
 	}
-	return nil
+
+	nc, err := nats.Connect(natsConfig.Addr, opts...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to NATS: %w", err)
+	}
+	log.Printf("Successfully connected to NATS")
+	return nc, nil
+}
+
+func SubscribeToAnalysis(nc *nats.Conn) (*nats.Subscription, error) {
+	log.Printf("Subscribing to network analysis tasks")
+
+	sub, err := nc.Subscribe("network.analysis.task", func(m *nats.Msg) {
+		log.Printf("Received PCAP data for analysis, size: %d bytes", len(m.Data))
+
+		result, err := analyzePcapData(m.Data)
+		if err != nil {
+			log.Printf("Error analyzing PCAP data: %v", err)
+			response := []byte(fmt.Sprintf(`{"error": "%v"}`, err))
+			m.Respond(response)
+			return
+		}
+
+		response, err := json.Marshal(result)
+		if err != nil {
+			log.Printf("Error marshaling result: %v", err)
+			m.Respond([]byte(`{"error": "internal server error"}`))
+			return
+		}
+
+		if err := m.Respond(response); err != nil {
+			log.Printf("Error sending response: %v", err)
+		}
+
+		log.Printf("Successfully analyzed PCAP data with %d packets", len(result.Packets))
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to subscribe to analysis tasks: %w", err)
+	}
+
+	log.Printf("Successfully subscribed to network analysis tasks")
+	return sub, nil
 }

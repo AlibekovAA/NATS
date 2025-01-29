@@ -13,9 +13,19 @@ type LogConfig struct {
 }
 
 func NewLogConfig() *LogConfig {
+	dir := os.Getenv("LOG_DIR")
+	if dir == "" {
+		dir = "logs"
+	}
+
+	file := os.Getenv("LOG_FILE")
+	if file == "" {
+		file = "app.log"
+	}
+
 	return &LogConfig{
-		Dir:  "logs",
-		File: "app.log",
+		Dir:  dir,
+		File: file,
 	}
 }
 
