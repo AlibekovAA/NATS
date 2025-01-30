@@ -2,7 +2,7 @@ fastapi[all]
 nats-py
 uvicorn
 pydantic
-pytz
+pytz==2024.1
 mypy
 types-aiofiles
 types-pytz

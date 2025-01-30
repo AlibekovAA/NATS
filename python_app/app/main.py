@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager
-from typing import Annotated, AsyncGenerator
+from typing import Annotated, AsyncGenerator, cast
 from io import BytesIO
 import logging
 
@@ -28,21 +28,24 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     app.state.nats_client = state.nats_client
     app.state.network_analyzer = state.network_analyzer
 
-    await app.state.nats_client.connect()
-    app.state.logger.info("Python server started and connected to NATS")
-
-    yield
-
-    await app.state.nats_client.close()
-    app.state.logger.info("Python server shutting down")
+    try:
+        await app.state.nats_client.connect()
+        app.state.logger.info("Python server started and connected to NATS")
+        yield
+    except Exception as e:
+        app.state.logger.error(f"Failed to start server: {str(e)}")
+        raise
+    finally:
+        await app.state.nats_client.close()
+        app.state.logger.info("Python server shutting down")
 
 
 app = FastAPI(lifespan=lifespan)
-app.mount("/static", StaticFiles(directory="app/frontend/public"), name="static")
+app.mount("/static", StaticFiles(directory="app/frontend"), name="static")
 
 
 def get_app_state() -> AppState:
-    return app.state
+    return cast(AppState, app.state)
 
 
 async def get_analyzer() -> NetworkAnalyzer:
@@ -55,7 +58,7 @@ async def get_logger() -> logging.Logger:
 
 @app.get("/", response_class=HTMLResponse)
 async def get_html() -> HTMLResponse:
-    with open("app/frontend/public/index.html") as f:
+    with open("app/frontend/index.html") as f:
         return HTMLResponse(content=f.read())
 
 
@@ -76,16 +79,22 @@ async def analyze_network_packets(
     if not file.filename or not file.filename.endswith('.pcap'):
         raise HTTPException(status_code=400, detail="Only PCAP files are supported")
 
-    MAX_FILE_SIZE: int = 60 * 1024 * 1024
+    MAX_FILE_SIZE: int = 200 * 1024 * 1024
+    contents_file = bytearray()
+    chunk_size = 1024 * 1024
+    total_size = 0
 
-    contents_file = await file.read()
-    file_size: int = len(contents_file)
-
-    if file_size > MAX_FILE_SIZE:
-        raise HTTPException(
-            status_code=400,
-            detail=f"File size exceeds maximum allowed size of {MAX_FILE_SIZE/1024/1024}MB"
-        )
+    while True:
+        chunk = await file.read(chunk_size)
+        if not chunk:
+            break
+        total_size += len(chunk)
+        if total_size > MAX_FILE_SIZE:
+            raise HTTPException(
+                status_code=400,
+                detail=f"File size exceeds maximum allowed size of {MAX_FILE_SIZE/1024/1024}MB"
+            )
+        contents_file.extend(chunk)
 
     try:
         result = await analyzer.analyze_pcap(BytesIO(contents_file))

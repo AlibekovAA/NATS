@@ -4,16 +4,20 @@ services:
   nats:
     image: nats:2.9
     container_name: nats
-    command: ["--max_bytes", "67108864"]
     ports:
       - "4222:4222"
       - "8222:8222"
     healthcheck:
       test: ["CMD", "nc", "-z", "localhost", "4222"]
-      interval: 30s
+      interval: 15s
       retries: 3
-      start_period: 10s
-      timeout: 10s
+      start_period: 5s
+      timeout: 5s
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.5'
 
   python_app:
     build:
@@ -29,10 +33,15 @@ services:
       - NATS_SERVER_URL=nats://nats:4222
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
+      interval: 15s
       retries: 3
-      start_period: 10s
-      timeout: 10s
+      start_period: 5s
+      timeout: 5s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.7'
 
   go_app:
     build:
@@ -44,3 +53,8 @@ services:
       - ./go_app/logs:/app/logs
     environment:
       - NATS_ADDR=nats://nats:4222
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.7'

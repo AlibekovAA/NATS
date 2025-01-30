@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Packet Analyzer</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1 class="animated-title">
+                <span>Network Packet Analyzer</span>
+            </h1>
+            <p class="subtitle">Upload PCAP file for network traffic analysis</p>
+        </header>
+
+        <main class="main">
+            <div class="upload-container">
+                <div class="info-container">
+                    <div class="info-icon">i</div>
+                    <div class="tooltip">Supports .pcap files up to 200MB</div>
+                </div>
+                <div class="upload-box" id="dropZone">
+                    <div class="upload-icon">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                            <polyline points="17 8 12 3 7 8" />
+                            <line x1="12" y1="3" x2="12" y2="15" />
+                        </svg>
+                    </div>
+                    <div class="upload-text">
+                        <h3>Drop PCAP file here</h3>
+                        <p>or</p>
+                        <label class="upload-button">
+                            Choose file
+                            <input type="file" id="pcapFile" accept=".pcap" hidden>
+                        </label>
+                    </div>
+                </div>
+                <div class="upload-status" id="uploadStatus"></div>
+                <div class="results" id="results"></div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>© 2024 Network Packet Analyzer. All rights reserved.</p>
+        </footer>
+    </div>
+    <script src="/static/js/analyzer.js"></script>
+</body>
+</html>

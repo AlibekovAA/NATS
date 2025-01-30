@@ -1,12 +1,14 @@
 package main
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"log"
 	"time"
 
 	"github.com/nats-io/nats.go"
+
 )
 
 type NATSConfig struct {
@@ -35,38 +37,75 @@ func ConnectToNATS(natsConfig *NATSConfig) (*nats.Conn, error) {
 	return nc, nil
 }
 
-func SubscribeToAnalysis(nc *nats.Conn) (*nats.Subscription, error) {
-	log.Printf("Subscribing to network analysis tasks")
+func SubscribeToAnalysis(nc *nats.Conn) error {
+	partialData := make(map[string][]byte)
 
-	sub, err := nc.Subscribe("network.analysis.task", func(m *nats.Msg) {
-		log.Printf("Received PCAP data for analysis, size: %d bytes", len(m.Data))
-
-		result, err := analyzePcapData(m.Data)
-		if err != nil {
-			log.Printf("Error analyzing PCAP data: %v", err)
-			response := []byte(fmt.Sprintf(`{"error": "%v"}`, err))
-			m.Respond(response)
+	_, err := nc.Subscribe("network.analysis.start", func(m *nats.Msg) {
+		var start struct {
+			AnalysisID   string `json:"analysis_id"`
+			TotalChunks  int    `json:"total_chunks"`
+		}
+		if err := json.Unmarshal(m.Data, &start); err != nil {
+			log.Printf("Error parsing start message: %v", err)
 			return
 		}
-
-		response, err := json.Marshal(result)
-		if err != nil {
-			log.Printf("Error marshaling result: %v", err)
-			m.Respond([]byte(`{"error": "internal server error"}`))
-			return
-		}
-
-		if err := m.Respond(response); err != nil {
-			log.Printf("Error sending response: %v", err)
-		}
-
-		log.Printf("Successfully analyzed PCAP data with %d packets", len(result.Packets))
+		partialData[start.AnalysisID] = make([]byte, 0)
 	})
-
 	if err != nil {
-		return nil, fmt.Errorf("failed to subscribe to analysis tasks: %w", err)
+		return fmt.Errorf("failed to subscribe to start: %w", err)
 	}
 
-	log.Printf("Successfully subscribed to network analysis tasks")
-	return sub, nil
+	_, err = nc.Subscribe("network.analysis.chunk", func(m *nats.Msg) {
+		var chunk struct {
+			AnalysisID   string `json:"analysis_id"`
+			ChunkNumber  int    `json:"chunk_number"`
+			TotalChunks  int    `json:"total_chunks"`
+			Data         string `json:"data"`
+		}
+		if err := json.Unmarshal(m.Data, &chunk); err != nil {
+			m.Respond([]byte(`{"error": "invalid json format"}`))
+			return
+		}
+
+		if int64(len(chunk.Data)) > nc.MaxPayload() {
+			m.Respond([]byte(`{"error": "chunk size exceeds maximum payload size"}`))
+			return
+		}
+
+		data, err := hex.DecodeString(chunk.Data)
+		if err != nil {
+			m.Respond([]byte(`{"error": "invalid hex data"}`))
+			return
+		}
+
+		partialData[chunk.AnalysisID] = append(partialData[chunk.AnalysisID], data...)
+		m.Respond([]byte(`{"status": "ok"}`))
+	})
+	if err != nil {
+		return fmt.Errorf("failed to subscribe to chunks: %w", err)
+	}
+
+	_, err = nc.Subscribe("network.analysis.finish", func(m *nats.Msg) {
+		var finish struct {
+			AnalysisID string `json:"analysis_id"`
+		}
+		if err := json.Unmarshal(m.Data, &finish); err != nil {
+			m.Respond([]byte(`{"error": "invalid finish message"}`))
+			return
+		}
+
+		data := partialData[finish.AnalysisID]
+		result, err := analyzePcapData(data)
+		if err != nil {
+			m.Respond([]byte(fmt.Sprintf(`{"error": "%v"}`, err)))
+			return
+		}
+
+		response, _ := json.Marshal(result)
+		m.Respond(response)
+
+		delete(partialData, finish.AnalysisID)
+	})
+
+	return err
 }
