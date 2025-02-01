@@ -7,6 +7,8 @@ import (
 	"time"
 )
 
+var Logger *log.Logger
+
 type LogConfig struct {
 	Dir  string
 	File string
@@ -29,15 +31,15 @@ func NewLogConfig() *LogConfig {
 	}
 }
 
-func SetLogger(logConfig *LogConfig) (*log.Logger, error) {
+func SetLogger(logConfig *LogConfig) error {
 	if err := os.MkdirAll(logConfig.Dir, os.ModePerm); err != nil {
-		return nil, err
+		return err
 	}
 
 	logFilepath := filepath.Join(logConfig.Dir, logConfig.File)
 	logFile, err := os.OpenFile(logFilepath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	moscow, err := time.LoadLocation("Europe/Moscow")
@@ -46,5 +48,6 @@ func SetLogger(logConfig *LogConfig) (*log.Logger, error) {
 	}
 	time.Local = moscow
 
-	return log.New(logFile, "", log.Ldate|log.Ltime|log.Lshortfile), nil
+	Logger = log.New(logFile, "", log.Ldate|log.Ltime|log.Lshortfile)
+	return nil
 }

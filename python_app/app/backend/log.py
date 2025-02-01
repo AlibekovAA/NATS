@@ -1,11 +1,19 @@
 import logging
+from logging.handlers import RotatingFileHandler
 from datetime import datetime
 import pytz
-import os
+from pathlib import Path
 
 
-def setup_logger(log_file_path: str) -> logging.Logger:
-    os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
+def get_logger(name: str) -> logging.Logger:
+    logger = logging.getLogger(name)
+
+    if logger.handlers:
+        return logger
+
+    logger.setLevel(logging.INFO)
+
+    logger.propagate = False
 
     moscow_tz = pytz.timezone('Europe/Moscow')
 
@@ -16,14 +24,17 @@ def setup_logger(log_file_path: str) -> logging.Logger:
                 return dt.strftime(datefmt)
             return dt.strftime('%Y-%m-%d %H:%M:%S')
 
-    logger = logging.getLogger('app')
-    logger.setLevel(logging.INFO)
-
-    file_handler = logging.FileHandler(log_file_path)
-    file_handler.setLevel(logging.INFO)
-
     formatter = MoscowTimeFormatter('[%(asctime)s] [%(levelname)s] %(message)s')
-    file_handler.setFormatter(formatter)
 
+    log_dir = Path("logs")
+    log_dir.mkdir(exist_ok=True)
+
+    file_handler = RotatingFileHandler(
+        log_dir / "app.log",
+        maxBytes=10*1024*1024,
+        backupCount=5
+    )
+    file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
+
     return logger

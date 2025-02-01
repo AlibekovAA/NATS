@@ -1,8 +1,11 @@
 from typing import Callable, Awaitable, Dict
-import asyncio
+
 from nats.aio.client import Client as NATS, Msg
 from nats.aio.subscription import Subscription
-from nats.errors import NoServersError, TimeoutError, Error as NatsError
+
+from app.backend.log import get_logger
+
+logger = get_logger(__name__)
 
 
 class NATSClient:
@@ -12,28 +15,14 @@ class NATSClient:
         self._connected = False
         self._subscribers: Dict[str, Subscription] = {}
 
-    async def connect(self, max_retries: int = 5, retry_interval: float = 2.0) -> None:
-        retries = 0
-        last_error = None
-
-        while retries < max_retries:
-            try:
-                await self.client.connect(
-                    servers=[self.server_url],
-                    reconnect_time_wait=2,
-                    max_reconnect_attempts=5,
-                    connect_timeout=5
-                )
-                self._connected = True
-                return
-            except (NoServersError, TimeoutError, NatsError) as e:
-                last_error = e
-                retries += 1
-                if retries < max_retries:
-                    await asyncio.sleep(retry_interval)
-                continue
-
-        raise last_error or NoServersError("Failed to connect to NATS server")
+    async def connect(self) -> None:
+        try:
+            await self.client.connect(self.server_url)
+            self._connected = True
+            logger.info(f"[NATS] Connected to NATS server at {self.server_url}")
+        except Exception as e:
+            logger.error(f"[NATS] Failed to connect to NATS server: {str(e)}")
+            raise
 
     async def subscribe(self, subject: str, callback: Callable[[Msg], Awaitable[None]]) -> Subscription:
         if subject not in self._subscribers:
@@ -48,9 +37,13 @@ class NATSClient:
         return await self.client.request(subject, payload, timeout=timeout)
 
     async def close(self) -> None:
-        if self.client and self.client.is_connected:
+        try:
             await self.client.close()
             self._connected = False
+            logger.info("[NATS] Connection closed")
+        except Exception as e:
+            logger.error(f"[NATS] Error closing NATS connection: {str(e)}")
+            raise
 
     def is_connected(self) -> bool:
         return self._connected and self.client.is_connected
