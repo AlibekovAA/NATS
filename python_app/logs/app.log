@@ -1,6 +1,0 @@
-[2025-01-30 23:22:46] [INFO] Python server started and connected to NATS
-[2025-01-30 23:23:52] [ERROR] Failed to analyze network packets: 'utf-8' codec can't decode byte 0xd4 in position 36: invalid continuation byte
-[2025-01-30 23:26:56] [INFO] Python server shutting down
-[2025-01-30 23:27:16] [INFO] Python server started and connected to NATS
-[2025-01-30 23:27:52] [ERROR] Failed to analyze network packets: Ошибка при обработке чанка 0: invalid hex data
-[2025-01-30 23:27:59] [INFO] Python server shutting down
