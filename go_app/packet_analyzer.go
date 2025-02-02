@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/pcap"
+
 )
 
 type NetworkPacket struct {
@@ -24,20 +25,16 @@ type AnalysisResult struct {
 }
 
 func analyzePcapData(data []byte) (*AnalysisResult, error) {
-    Logger.Printf("[Packet Analysis] Starting PCAP analysis of %d bytes", len(data))
     buf := bytes.NewBuffer(data)
 
     handle, err := pcap.OpenOffline(buf.String())
     if err != nil {
-        Logger.Printf("[Packet Analysis] Error opening pcap data: %v", err)
         return nil, fmt.Errorf("error opening pcap data: %v", err)
     }
     defer handle.Close()
 
     var packets []NetworkPacket
     packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
-    Logger.Printf("[Packet Analysis] Successfully created packet source")
-
     stats := make(map[string]interface{})
     protocolCount := make(map[string]int)
     totalSize := 0
@@ -82,11 +79,6 @@ func analyzePcapData(data []byte) (*AnalysisResult, error) {
         protocolCount[protocol]++
         totalSize += netPacket.Size
     }
-
-    Logger.Printf("[Packet Analysis] Analysis completed:")
-    Logger.Printf("  - Processed %d packets", len(packets))
-    Logger.Printf("  - Total size: %d bytes", totalSize)
-    Logger.Printf("  - Protocols found: %v", protocolCount)
 
     stats["total_packets"] = len(packets)
     stats["total_size"] = totalSize
