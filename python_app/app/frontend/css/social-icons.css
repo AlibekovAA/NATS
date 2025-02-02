@@ -1,0 +1,106 @@
+.social-icons {
+    list-style: none;
+    position: fixed;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 100;
+}
+
+.social-icon {
+    margin: 0;
+    position: relative;
+}
+
+.social-icon .tooltip {
+    position: absolute;
+    right: 110%;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-social-text);
+    background: var(--color-social-primary);
+    padding: 6px 10px;
+    border-radius: var(--radius-default);
+    opacity: 0;
+    visibility: hidden;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    box-shadow: var(--shadow-default);
+}
+
+.social-icon:hover .tooltip {
+    opacity: 1;
+    visibility: visible;
+    right: 120%;
+}
+
+.social-icon a {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    color: var(--color-social-primary);
+    background-color: var(--color-surface);
+    transition: all 0.3s ease-in-out;
+    box-shadow: var(--shadow-default);
+}
+
+.social-icon a:hover {
+    color: var(--color-social-text);
+    box-shadow: var(--shadow-lg);
+}
+
+.social-icon a svg {
+    position: relative;
+    z-index: 1;
+    width: 24px;
+    height: 24px;
+}
+
+.social-icon a .filled {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 0;
+    background-color: var(--color-social-primary);
+    transition: all 0.3s ease-in-out;
+}
+
+.social-icon a:hover .filled {
+    height: 100%;
+    background-color: var(--color-social-hover);
+}
+
+.social-icon a[data-social="github"] .filled,
+.social-icon a[data-social="github"] ~ .tooltip,
+.social-icon a[data-social="telegram"] .filled,
+.social-icon a[data-social="telegram"] ~ .tooltip,
+.social-icon a[data-social="vk"] .filled,
+.social-icon a[data-social="vk"] ~ .tooltip {
+    background-color: var(--color-social-primary);
+}
+
+@media (max-width: 768px) {
+    .social-icons {
+        right: 10px;
+    }
+
+    .social-icon a {
+        width: 40px;
+        height: 40px;
+    }
+
+    .social-icon a svg {
+        width: 20px;
+        height: 20px;
+    }
+}

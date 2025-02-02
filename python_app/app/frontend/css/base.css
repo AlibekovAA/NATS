@@ -9,11 +9,29 @@
     --color-text: #202124;
     --color-text-secondary: #5f6368;
     --color-border: #e1e4e8;
+
+    --color-error-bg: #fff5f5;
+    --color-error-border: #feb2b2;
+    --color-success-bg: #f0fff4;
+    --color-success-border: #9ae6b4;
+    --color-hover-bg: rgba(26, 115, 232, 0.05);
+    --color-modal-overlay: rgba(0, 0, 0, 0.5);
+    --color-white: #ffffff;
+    --color-shimmer: rgba(255, 255, 255, 0.2);
+
+    --color-button-close: #ff605c;
+    --color-button-minimize: #ffbd44;
+    --color-button-maximize: #00ca4e;
+
     --space-unit: 0.5rem;
     --radius-default: 8px;
     --radius-lg: 16px;
     --shadow-default: 0 4px 6px rgba(0, 0, 0, 0.1);
     --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+
+    --color-social-primary: var(--color-primary);
+    --color-social-hover: var(--color-primary-dark);
+    --color-social-text: var(--color-surface);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }

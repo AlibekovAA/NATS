@@ -44,6 +44,7 @@ function handleDrop(e) {
 function handleFileSelect(e) {
     const file = e.target.files[0];
     handleFile(file);
+    e.target.value = '';
 }
 
 function handleFile(file) {

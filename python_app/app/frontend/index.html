@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="static/css/typography.css">
     <link rel="stylesheet" href="static/css/info-button.css">
     <link rel="stylesheet" href="static/css/components.css">
+    <link rel="stylesheet" href="static/css/social-icons.css">
 </head>
 
 <body>
@@ -24,7 +25,7 @@
         <main class="main">
             <div class="upload-container">
                 <div class="info-container">
-                    <div class="info-icon">i</div>
+                    <div class="info-icon">?</div>
                     <div class="tooltip">Supports .pcap files up to 1GB</div>
                 </div>
                 <div class="upload-box" id="dropZone">
@@ -61,6 +62,52 @@
             <p>© 2025 Network Packet Analyzer. All rights reserved.</p>
         </footer>
     </div>
+
+    <ul class="social-icons">
+        <li class="social-icon">
+            <a href="https://github.com/AlibekovAA" target="_blank" rel="noopener" aria-label="GitHub"
+                data-social="github">
+                <div class="filled"></div>
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+                </svg>
+            </a>
+            <div class="tooltip">GitHub</div>
+        </li>
+        <li class="social-icon">
+            <a href="https://t.me/alibekov_05" target="_blank" rel="noopener" aria-label="Telegram"
+                data-social="telegram">
+                <div class="filled"></div>
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm5.495 7.825l-1.84 8.675c-.138.615-.505.765-1.025.475l-2.835-2.085-1.37 1.32c-.152.152-.28.28-.575.28l.205-2.91 5.295-4.78c.23-.205-.05-.32-.355-.115l-6.545 4.12-2.82-.88c-.613-.195-.625-.613.13-.91l11.02-4.245c.51-.195.955.115.715.955z" />
+                </svg>
+            </a>
+            <div class="tooltip">Telegram</div>
+        </li>
+        <li class="social-icon">
+            <a href="https://vk.com/alibekov_05" target="_blank" rel="noopener" aria-label="VKontakte" data-social="vk">
+                <div class="filled"></div>
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm6.24 16.66h-1.77c-.67 0-.87-.54-2.07-1.76-1.04-1.02-1.5-1.16-1.76-1.16-.36 0-.46.1-.46.59v1.61c0 .42-.13.67-1.25.67-1.84 0-3.87-1.12-5.3-3.2-2.16-3.08-2.74-5.4-2.74-5.87 0-.25.1-.49.59-.49h1.77c.44 0 .61.21.78.71.85 2.47 2.27 4.63 2.86 4.63.22 0 .32-.1.32-.67V9.79c-.07-1.19-.69-1.29-.69-1.71 0-.21.17-.42.47-.42h2.78c.38 0 .51.21.51.66v3.57c0 .38.11.51.19.51.22 0 .41-.13.82-.55 1.27-1.42 2.17-3.6 2.17-3.6.12-.25.31-.48.74-.48h1.77c.53 0 .65.27.53.64-.22 1.02-2.36 4.04-2.36 4.04-.18.31-.26.44 0 .78.19.25.82.77 1.23 1.24.77.86 1.36 1.58 1.51 2.07.17.47-.1.72-.56.72z" />
+                </svg>
+            </a>
+            <div class="tooltip">VKontakte</div>
+        </li>
+    </ul>
+
+    <div id="results" class="results-modal">
+        <div class="results-modal-content">
+            <div class="results-modal-header">
+                <h2>Results</h2>
+                <button class="close-button">×</button>
+            </div>
+            <div class="results-modal-body"></div>
+        </div>
+    </div>
+
     <script type="module" src="static/js/analyzer.js"></script>
 </body>
 
