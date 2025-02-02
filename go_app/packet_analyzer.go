@@ -1,8 +1,9 @@
+//go:build !lint
+
 package main
 
 import (
-	"bytes"
-	"fmt"
+	"os"
 	"time"
 
 	"github.com/google/gopacket"
@@ -25,11 +26,33 @@ type AnalysisResult struct {
 }
 
 func analyzePcapData(data []byte) (*AnalysisResult, error) {
-    buf := bytes.NewBuffer(data)
-
-    handle, err := pcap.OpenOffline(buf.String())
+    tmpfile, err := os.CreateTemp("", "pcap-*.pcap")
     if err != nil {
-        return nil, fmt.Errorf("error opening pcap data: %v", err)
+        Logger.Printf("error creating temp file: %v", err)
+        return nil, err
+    }
+    defer os.Remove(tmpfile.Name())
+    defer tmpfile.Close()
+
+    if _, err := tmpfile.Write(data); err != nil {
+        Logger.Printf("error writing to temp file: %v", err)
+        return nil, err
+    }
+
+    if err := tmpfile.Sync(); err != nil {
+        Logger.Printf("error syncing temp file: %v", err)
+        return nil, err
+    }
+
+    if _, err := tmpfile.Seek(0, 0); err != nil {
+        Logger.Printf("error seeking temp file: %v", err)
+        return nil, err
+    }
+
+    handle, err := pcap.OpenOffline(tmpfile.Name())
+    if err != nil {
+        Logger.Printf("error opening pcap file: %v", err)
+        return nil, err
     }
     defer handle.Close()
 

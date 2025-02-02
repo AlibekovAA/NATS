@@ -50,8 +50,8 @@ function handleFileSelect(e) {
 function handleFile(file) {
     if (!file) return;
 
-    if (!file.name.endsWith('.pcap')) {
-        showErrorMessage('Please select a PCAP file');
+    if (!file.name.toLowerCase().endsWith('.pcap') && !file.name.toLowerCase().endsWith('.pcapng')) {
+        showErrorMessage('Please select a PCAP or PCAPNG file');
         return;
     }
 

@@ -100,15 +100,23 @@ class NetworkAnalyzer:
         return NetworkAnalysisResult(**result_data)
 
     def _split_file(self, file_pcap: BinaryIO) -> List[bytes]:
+        file_content = file_pcap.read()
+
+        if len(file_content) < 4 or not (
+            file_content.startswith(b'\xa1\xb2\xc3\xd4') or
+            file_content.startswith(b'\xd4\xc3\xb2\xa1')
+        ):
+            raise ValueError("Invalid PCAP file format")
+
         chunks = []
-        total_size = 0
+        chunk_size = self.chunk_size
 
-        while True:
-            chunk = file_pcap.read(self.chunk_size)
-            if not chunk:
-                break
+        first_chunk = file_content[:chunk_size]
+        chunks.append(first_chunk)
+
+        for i in range(chunk_size, len(file_content), chunk_size):
+            chunk = file_content[i:i + chunk_size]
             chunks.append(chunk)
-            total_size += len(chunk)
 
-        self.logger.info(f"[Analysis] File split: {len(chunks)} chunks, {total_size} bytes total")
+        self.logger.info(f"[Analysis] File split: {len(chunks)} chunks, {len(file_content)} bytes total")
         return chunks
