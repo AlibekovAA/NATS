@@ -7,19 +7,17 @@
 }
 
 .animated-title span {
-    font: bold 1.8em/1.2 "Segoe UI", sans-serif;
+    font: bold clamp(1rem, 3vw, 1.8rem)/1.2 "Segoe UI", sans-serif;
     display: inline-block;
     background: linear-gradient(90deg, var(--color-white), var(--color-background), var(--color-white));
     background-size: 200% auto;
-    animation: shine 3s linear infinite;
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     text-shadow: 0 0 30px var(--color-shimmer);
-    font-size: clamp(1rem, 3vw, 1.8rem);
-    line-height: 1.2;
     word-spacing: 0.2em;
     letter-spacing: 0.05em;
+    animation: shine 3s linear infinite;
 }
 
 .animated-title span > span {
@@ -27,9 +25,7 @@
     display: inline-block;
     opacity: 0;
     filter: blur(4px);
-    animation:
-        fadeInBlur 0.8s ease forwards,
-        float 3s ease-in-out infinite;
+    animation: fadeInBlur 0.8s ease forwards, float 3s ease-in-out infinite;
     animation-delay: calc(0.1s * var(--char-index, 1));
 }
 
@@ -46,42 +42,21 @@
 }
 
 @keyframes fadeInDown {
-    from {
-        opacity: 0;
-        transform: translateY(-30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(-30px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes fadeInBlur {
-    from {
-        opacity: 0;
-        filter: blur(4px);
-        transform: scale(0.9);
-    }
-    to {
-        opacity: 1;
-        filter: blur(0);
-        transform: scale(1);
-    }
+    from { opacity: 0; filter: blur(4px); transform: scale(0.9); }
+    to { opacity: 1; filter: blur(0); transform: scale(1); }
 }
 
 @keyframes float {
-    0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-5px); }
 }
 

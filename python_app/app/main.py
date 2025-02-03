@@ -75,7 +75,7 @@ async def analyze_network_packets(
         logger.warning(f"[API] Attempted to upload non-PCAP file: {file.filename}")
         raise HTTPException(status_code=400, detail="Only PCAP files are supported")
 
-    MAX_FILE_SIZE: int = 200 * 1024 * 1024
+    MAX_FILE_SIZE: int = 1024 * 1024 * 1024
     contents_file = bytearray()
     chunk_size = 1024 * 1024
     total_size = 0

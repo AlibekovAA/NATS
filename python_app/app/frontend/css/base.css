@@ -1,8 +1,11 @@
+@import "typography.css";
+@import "info-button.css";
+@import "components.css";
+@import "social-icons.css";
+
 :root {
     --color-primary: #1a73e8;
     --color-primary-dark: #1557b0;
-    --color-secondary: #34a853;
-    --color-surface: #ffffff;
     --color-background: #f8f9fa;
     --color-error: #dc3545;
     --color-success: #28a745;
@@ -28,10 +31,6 @@
     --radius-lg: 16px;
     --shadow-default: 0 4px 6px rgba(0, 0, 0, 0.1);
     --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
-
-    --color-social-primary: var(--color-primary);
-    --color-social-hover: var(--color-primary-dark);
-    --color-social-text: var(--color-surface);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }

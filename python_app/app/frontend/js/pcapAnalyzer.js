@@ -5,7 +5,6 @@ export async function analyzePcap(file) {
     try {
         const formData = new FormData();
         formData.append('file', file);
-
         const response = await fetch('/analyze-network', {
             method: 'POST',
             body: formData

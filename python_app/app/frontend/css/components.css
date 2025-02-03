@@ -7,7 +7,7 @@
     margin-bottom: min(calc(var(--space-unit) * 4), 4vh);
     padding: min(calc(var(--space-unit) * 2), 2vh) 0;
     background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
-    color: var(--color-surface);
+    color: var(--color-white);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-lg);
     position: relative;
@@ -34,7 +34,7 @@
 }
 
 .upload-container {
-    background: var(--color-surface);
+    background: var(--color-white);
     border-radius: var(--radius-lg);
     padding: min(calc(var(--space-unit) * 6), 6vh);
     box-shadow: var(--shadow-default);
@@ -152,7 +152,7 @@
 }
 
 .results-modal-content {
-    background: var(--color-surface);
+    background: var(--color-white);
     width: 90%;
     max-width: 800px;
     max-height: 80vh;
@@ -172,7 +172,7 @@
 }
 
 .results-modal-header h2 {
-    color: var(--color-surface);
+    color: var(--color-white);
     font-size: 1.5rem;
     font-weight: 500;
     margin: 0;
@@ -183,12 +183,12 @@
     border: none;
     font-size: 24px;
     cursor: pointer;
-    color: var(--color-surface);
+    color: var(--color-white);
     padding: 4px 8px;
 }
 
 .close-button:hover {
-    color: #fff;
+    color: var(--color-white);
     opacity: 0.8;
 }
 

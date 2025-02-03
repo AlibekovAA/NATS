@@ -27,11 +27,11 @@ function preventDefaults(e) {
     e.stopPropagation();
 }
 
-function highlight(e) {
+function highlight() {
     document.getElementById('dropZone').classList.add('drag-over');
 }
 
-function unhighlight(e) {
+function unhighlight() {
     document.getElementById('dropZone').classList.remove('drag-over');
 }
 
