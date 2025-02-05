@@ -6,8 +6,7 @@
 
 ## Пример пользовательского интерфейса
 
-![UI](example_ui/UI.jpg)
-![Анимация](example_ui/animation.gif)
+![](example_ui/animation.gif)
 
 ## Архитектура
 
