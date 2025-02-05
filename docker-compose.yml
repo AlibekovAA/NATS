@@ -16,12 +16,16 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256M
+          memory: 1G
           cpus: '0.5'
 
   python_app:
     build:
       context: ./python_app
+      dockerfile: Dockerfile
+      target: production
+      cache_from:
+        - python_app:cache
     container_name: python_app
     ports:
       - "8000:8000"
@@ -31,6 +35,8 @@ services:
       - ./python_app:/app
     environment:
       - NATS_SERVER_URL=nats://nats:4222
+    labels:
+      com.docker.compose.watch: "true"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 15s
@@ -40,12 +46,16 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
+          memory: 1G
           cpus: '0.7'
 
   go_app:
     build:
       context: ./go_app
+      dockerfile: Dockerfile
+      target: production
+      cache_from:
+        - go_app:cache
     container_name: go_app
     depends_on:
       - nats
@@ -53,8 +63,10 @@ services:
       - ./go_app/logs:/app/logs
     environment:
       - NATS_ADDR=nats://nats:4222
+    labels:
+      com.docker.compose.watch: "true"
     deploy:
       resources:
         limits:
-          memory: 512M
+          memory: 1G
           cpus: '0.7'

@@ -9,12 +9,15 @@ LABEL description="Go NATS Client Application"
 RUN apt-get update && apt-get install -y libpcap-dev
 
 COPY go.mod go.sum ./
-RUN go mod download
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    go mod download
 
 COPY . .
-RUN CGO_ENABLED=1 GOOS=linux go build -o main .
+RUN --mount=type=cache,target=/root/.cache/go-build \
+    CGO_ENABLED=1 GOOS=linux go build -o main .
 
-FROM debian:stable-slim
+FROM debian:stable-slim AS production
 
 WORKDIR /app
 

@@ -48,7 +48,42 @@ export function showSuccessMessage(result) {
     const resultsModal = document.getElementById('results');
     const modalBody = resultsModal.querySelector('.results-modal-body');
 
-    modalBody.innerHTML = `<pre>${JSON.stringify(result, null, 2)}</pre>`;
+    const uniqueIPs = {
+        sources: [...new Set(result.packets.map(p => p.source_ip))],
+        destinations: [...new Set(result.packets.map(p => p.destination_ip))]
+    };
+
+    const summaryView = {
+        summary: result.summary,
+        unique_ips: {
+            sources: uniqueIPs.sources,
+            destinations: uniqueIPs.destinations
+        }
+    };
+
+    modalBody.innerHTML = `
+        <div class="view-controls">
+            <label class="switch">
+                <input type="checkbox" id="viewToggle">
+                <span class="slider"></span>
+            </label>
+            <span class="view-label">Подробный отчет</span>
+        </div>
+        <div class="results-content">
+            <pre class="summary-view">${JSON.stringify(summaryView, null, 2)}</pre>
+            <pre class="detailed-view" style="display: none">${JSON.stringify(result, null, 2)}</pre>
+        </div>
+    `;
+
+    const viewToggle = modalBody.querySelector('#viewToggle');
+    const summaryViewEl = modalBody.querySelector('.summary-view');
+    const detailedViewEl = modalBody.querySelector('.detailed-view');
+
+    viewToggle.addEventListener('change', () => {
+        summaryViewEl.style.display = viewToggle.checked ? 'none' : 'block';
+        detailedViewEl.style.display = viewToggle.checked ? 'block' : 'none';
+    });
+
     resultsModal.classList.add('show');
 }
 

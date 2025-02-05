@@ -5,12 +5,18 @@ from io import BytesIO
 from fastapi import FastAPI, HTTPException, UploadFile, Depends
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.exceptions import RequestValidationError
 
 from app.backend.log import get_logger
 from app.backend.nats_client import NATSClient
 from app.backend.models import NetworkAnalysisResult
 from app.backend.config import NATS_SERVER_URL
 from app.backend.network_analyzer import NetworkAnalyzer
+from app.backend.exception_handlers import (
+    global_exception_handler,
+    validation_exception_handler,
+    http_exception_handler
+)
 
 
 logger = get_logger(__name__)
@@ -42,6 +48,10 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
 app = FastAPI(lifespan=lifespan)
 app.mount("/static", StaticFiles(directory="app/frontend"), name="static")
+
+app.add_exception_handler(Exception, global_exception_handler)
+app.add_exception_handler(RequestValidationError, validation_exception_handler)
+app.add_exception_handler(HTTPException, http_exception_handler)
 
 
 def get_app_state() -> AppState:
