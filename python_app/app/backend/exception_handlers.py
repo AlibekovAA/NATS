@@ -20,7 +20,10 @@ async def global_exception_handler(request: Request, exc: Exception) -> JSONResp
     )
 
 
-async def validation_exception_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
+async def validation_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    if not isinstance(exc, RequestValidationError):
+        from fastapi.exceptions import RequestValidationError
+        exc = RequestValidationError([])
     logger.warning(f"[API] Validation error: {str(exc)}")
     return JSONResponse(
         status_code=422,
@@ -32,7 +35,10 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     )
 
 
-async def http_exception_handler(request: Request, exc: HTTPException) -> JSONResponse:
+async def http_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    if not isinstance(exc, HTTPException):
+        from fastapi import HTTPException
+        exc = HTTPException(status_code=500, detail=str(exc))
     logger.warning(f"[API] HTTP error {exc.status_code}: {exc.detail}")
     return JSONResponse(
         status_code=exc.status_code,

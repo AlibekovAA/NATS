@@ -2,12 +2,32 @@ package main
 
 import (
 	"context"
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/nats-io/nats.go"
 )
+
+func handleSignals(cancel context.CancelFunc) {
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		sig := <-sigChan
+		Logger.Printf("Received signal %v, initiating graceful shutdown", sig)
+		cancel()
+	}()
+}
+
+func gracefulShutdown(nc *nats.Conn) {
+	_, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer shutdownCancel()
+	if err := nc.Drain(); err != nil {
+		Logger.Printf("Error during NATS drain: %v", err)
+	}
+	Logger.Println("Server successfully stopped")
+}
 
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
@@ -15,7 +35,7 @@ func main() {
 
 	logConfig := NewLogConfig()
 	if err := SetLogger(logConfig); err != nil {
-		log.Fatalf("Failed to setup logger: %v", err)
+		return
 	}
 
 	config := NewConfig()
@@ -35,23 +55,9 @@ func main() {
 
 	Logger.Println("Go server starting...")
 
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
-
-	go func() {
-		sig := <-sigChan
-		Logger.Printf("Received signal %v, initiating graceful shutdown", sig)
-		cancel()
-	}()
+	handleSignals(cancel)
 
 	<-ctx.Done()
 
-	_, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer shutdownCancel()
-
-	if err := nc.Drain(); err != nil {
-		Logger.Printf("Error during NATS drain: %v", err)
-	}
-
-	Logger.Println("Server successfully stopped")
+	gracefulShutdown(nc)
 }

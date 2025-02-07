@@ -14,7 +14,3 @@ class NetworkPacket(BaseModel):
 class NetworkAnalysisResult(BaseModel):
     packets: List[NetworkPacket]
     summary: dict
-
-
-class TestModel(BaseModel):
-    name: str

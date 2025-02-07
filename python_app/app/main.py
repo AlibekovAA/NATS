@@ -1,16 +1,17 @@
 from contextlib import asynccontextmanager
-from typing import Annotated, AsyncGenerator, cast
 from io import BytesIO
+from typing import Annotated, AsyncGenerator, cast
 
 from fastapi import FastAPI, HTTPException, UploadFile, Depends
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.exceptions import RequestValidationError
+from prometheus_fastapi_instrumentator import Instrumentator
 
 from app.backend.log import get_logger
 from app.backend.nats_client import NATSClient
 from app.backend.models import NetworkAnalysisResult
-from app.backend.config import NATS_SERVER_URL
+from app.backend.config import NATS_SERVER_URL, MAX_FILE_SIZE
 from app.backend.network_analyzer import NetworkAnalyzer
 from app.backend.exception_handlers import (
     global_exception_handler,
@@ -49,6 +50,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 app = FastAPI(lifespan=lifespan)
 app.mount("/static", StaticFiles(directory="app/frontend"), name="static")
 
+instrumentator = Instrumentator().instrument(app).expose(app, endpoint="/metrics")
+
 app.add_exception_handler(Exception, global_exception_handler)
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
 app.add_exception_handler(HTTPException, http_exception_handler)
@@ -81,32 +84,26 @@ async def analyze_network_packets(
     file: UploadFile,
     analyzer: Annotated[NetworkAnalyzer, Depends(get_analyzer)]
 ) -> NetworkAnalysisResult:
-    if not file.filename or not file.filename.endswith('.pcap'):
-        logger.warning(f"[API] Attempted to upload non-PCAP file: {file.filename}")
-        raise HTTPException(status_code=400, detail="Only PCAP files are supported")
+    if not file.filename or not (file.filename.lower().endswith(('.pcap', '.pcapng'))):
+        logger.warning(f"[API] Invalid file type: {file.filename}")
+        raise HTTPException(status_code=400, detail="Only PCAP/PCAPNG files are supported")
 
-    MAX_FILE_SIZE: int = 1024 * 1024 * 1024
-    contents_file = bytearray()
-    chunk_size = 1024 * 1024
-    total_size = 0
+    pcap_buffer = BytesIO()
+    size = 0
 
-    while True:
-        chunk = await file.read(chunk_size)
-        if not chunk:
-            break
-        total_size += len(chunk)
-        if total_size > MAX_FILE_SIZE:
-            logger.warning(f"[API] File size exceeds limit: {total_size} bytes > {MAX_FILE_SIZE} bytes")
-            raise HTTPException(
-                status_code=400,
-                detail=f"File size exceeds maximum allowed size of {MAX_FILE_SIZE/1024/1024}MB"
-            )
-        contents_file.extend(chunk)
+    content = await file.read()
+    size = len(content)
+    if size > MAX_FILE_SIZE:
+        logger.warning(f"[API] File size exceeds limit: {size} bytes")
+        raise HTTPException(
+            status_code=400,
+            detail=f"File size exceeds {MAX_FILE_SIZE // (1024*1024)}MB limit"
+        )
+    pcap_buffer.write(content)
 
+    pcap_buffer.seek(0)
     try:
-        result = await analyzer.analyze_pcap(BytesIO(contents_file))
-        logger.info(f"[API] Successfully analyzed network packets from {file.filename}")
-        return result
+        return await analyzer.analyze_pcap(pcap_buffer)
     except Exception as e:
-        logger.error(f"[API] Failed to analyze network packets: {str(e)}")
+        logger.error(f"[API] Analysis failed: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
