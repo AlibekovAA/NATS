@@ -15,7 +15,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 
 COPY . .
 RUN --mount=type=cache,target=/root/.cache/go-build \
-    CGO_ENABLED=1 GOOS=linux go build -o main .
+    CGO_ENABLED=1 GOOS=linux go build -o main ./cmd/main.go
 
 FROM debian:stable-slim AS production
 
@@ -31,5 +31,6 @@ RUN apt-get update && apt-get install -y libpcap0.8 tzdata \
 COPY --from=builder /app/main .
 
 ENV TZ=Europe/Moscow
+RUN mkdir -p /app/logs
 
 ENTRYPOINT ["/app/main"]

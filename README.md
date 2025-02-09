@@ -76,4 +76,4 @@
 - Остановка всех контейнеров: `docker stop $(docker ps -a -q)`
 - Удаление всех контейнеров: `docker rm $(docker ps -a -q)`
 - Удаление всех образов: `docker rmi $(docker images -q)`
-- Полная очистка системы: `docker system prune -a --volumes`
+- Полная очистка системы: `docker system prune -a --volumes -f`
