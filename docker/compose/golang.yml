@@ -1,0 +1,17 @@
+services:
+  go_app:
+    build:
+      context: ../../go_app
+      dockerfile: Dockerfile
+      target: production
+      cache_from:
+        - go_app:cache
+    container_name: go_app
+    depends_on:
+      - nats
+    volumes:
+      - ../../go_app/logs:/app/logs
+    environment:
+      - NATS_ADDR=nats://nats:4222
+    labels:
+      com.docker.compose.watch: "true"

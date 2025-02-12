@@ -1,0 +1,21 @@
+services:
+  nats:
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+
+  python_app:
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.7'
+
+  go_app:
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.7'

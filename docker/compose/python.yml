@@ -1,0 +1,25 @@
+services:
+  python_app:
+    build:
+      context: ../../python_app
+      dockerfile: Dockerfile
+      target: production
+      cache_from:
+        - python_app:cache
+    container_name: python_app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - nats
+    volumes:
+      - ../../python_app:/app
+    environment:
+      - NATS_SERVER_URL=nats://nats:4222
+    labels:
+      com.docker.compose.watch: "true"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      retries: 3
+      start_period: 5s
+      timeout: 5s

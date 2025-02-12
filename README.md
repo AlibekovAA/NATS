@@ -53,15 +53,48 @@
    docker-compose build
    ```
 5. Запустите контейнеры:
-   ```bash
-   docker-compose up
-   ```
+   - Для разработки (включая документацию):
+     ```bash
+     docker-compose up
+     ```
+   - Только документация:
+     ```bash
+     docker-compose up docs
+     ```
+   - Только основные сервисы:
+     ```bash
+     docker-compose up nats python_app go_app
+     ```
+   - Для продакшена:
+     ```bash
+     docker-compose -f docker-compose.yml -f docker/compose/production.yml up
+     ```
+
+## Структура Docker конфигурации
+
+Конфигурация Docker разделена на несколько файлов в директории `docker/compose/`:
+- `base.yml` - базовая конфигурация NATS сервера
+- `python.yml` - конфигурация Python приложения
+- `golang.yml` - конфигурация Go приложения
+- `production.yml` - дополнительные настройки для продакшена
+
+Основной файл `docker-compose.yml` в корневой директории объединяет все конфигурации.
 
 ## Доступные endpoints
 
 - Основной API: [http://localhost:8000](http://localhost:8000)
 - Документация API (Swagger UI): [http://localhost:8000/docs](http://localhost:8000/docs)
 - Health check: [http://localhost:8000/health](http://localhost:8000/health)
+- Документация проекта: [http://localhost:8001](http://localhost:8001)
+
+## Документация проекта
+
+Проект включает подробную документацию, доступную через веб-интерфейс:
+
+- Полная документация доступна по адресу [http://localhost:8001](http://localhost:8001)
+- Документация автоматически обновляется при изменении файлов в директории `docs/`
+- Поддерживает поиск по содержимому
+- Включает подробные описания архитектуры, API и конфигурации
 
 ## Оптимизация сборки
 

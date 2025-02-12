@@ -1,0 +1,13 @@
+services:
+  nats:
+    image: nats:2.9
+    container_name: nats
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "4222"]
+      interval: 15s
+      retries: 3
+      start_period: 5s
+      timeout: 5s
