@@ -13,8 +13,3 @@ services:
     extends:
       file: docker/compose/golang.yml
       service: go_app
-
-  docs:
-    extends:
-      file: docker/compose/docs.yml
-      service: docs
